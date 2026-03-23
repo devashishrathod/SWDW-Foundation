@@ -97,8 +97,8 @@ const ICON_CONFIG = {
     icon: <FaUserMd />,
     color: "text-indigo-500",
   },
-  prenatalServices: {
-    icon: <FaBaby />,
+  services: {
+    icon: <FaFolderOpen />,
     color: "text-pink-500",
   },
   subcategory: {

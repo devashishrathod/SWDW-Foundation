@@ -31,13 +31,13 @@ export const PrenatalServicesPage = () => {
   } = useGetQuery(
     `${API_ENDPOINTS.CATEGORIES.GET_ALL.replace(
       "page=1",
-      `page=${pagination.currentPage}`
-    ).replace("limit=20", `limit=${pagination.limit}`)}`
+      `page=${pagination.currentPage}`,
+    ).replace("limit=20", `limit=${pagination.limit}`)}`,
   );
   console.log(categoryData, "category data from category page");
 
   const { mutate: deleteCategory, isLoading: isDeleting } = useDeleteMutation(
-    API_ENDPOINTS.CATEGORIES.DELETE.replace(":id", "{id}")
+    API_ENDPOINTS.CATEGORIES.DELETE.replace(":id", "{id}"),
   );
 
   useEffect(() => {
@@ -158,10 +158,10 @@ export const PrenatalServicesPage = () => {
     if (error?.response?.status === 404) {
       return (
         <NotFound
-          title="No Prenatal Services Found"
-          type="prenatalServices"
+          title="No Services Found"
+          type="services"
           message={notFoundMessage}
-          actionText="Create New Prenatal Service"
+          actionText="Add Service"
           onAction={handleAddNew}
         />
       );
