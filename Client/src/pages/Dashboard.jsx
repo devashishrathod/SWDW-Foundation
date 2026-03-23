@@ -1,34 +1,69 @@
 import { useMemo, useState } from "react";
 import {
-  Activity,
-  Calendar,
-  ClipboardList,
-  MessageSquareText,
-  Sparkles,
   Users,
+  Heart,
+  Image,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Activity,
+  UserCheck,
+  Building,
+  Filter,
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
-import { buildMockDashboard } from "../components/dashboard/dashboardMock";
-import { ActivityFeed } from "../components/dashboard/ActivityFeed";
-import {
-  AppointmentsTrendChart,
-  SessionsStackChart,
-} from "../components/dashboard/DashboardCharts";
-import { KpiCard } from "../components/dashboard/KpiCard";
-import { ModuleGrid } from "../components/dashboard/ModuleGrid";
-import { Panel } from "../components/dashboard/Panel";
 import { RangeFilter } from "../components/dashboard/RangeFilter";
-import { QueueTable } from "../components/dashboard/QueueTable";
-import {
-  hasPermission,
-  PERMISSIONS,
-} from "../components/dashboard/permissions";
-import { SectionHeader } from "../components/dashboard/ui";
-import {
-  DASHBOARD_LABELS,
-  ROLES,
-  TIME_PERIODS,
-} from "../constants/appConstants";
+import { TIME_PERIODS } from "../constants/appConstants";
+
+// Mock data for SWDW Foundation
+const buildSWDWDashboard = ({ range }) => {
+  const seed =
+    range === TIME_PERIODS.TODAY ? 1 : range === TIME_PERIODS.WEEKLY ? 7 : 30;
+
+  return {
+    metrics: {
+      volunteers: {
+        current: 85 + seed * 2,
+        prev: 78 + seed,
+        trendPct: 12,
+      },
+      users: {
+        current: 1250 + seed * 5,
+        prev: 1100 + seed * 3,
+        trendPct: 15,
+      },
+      donations: {
+        current: 328000 + seed * 1000,
+        prev: 280000 + seed * 800,
+        trendPct: 20,
+      },
+      gallery: {
+        current: 450 + seed * 3,
+        prev: 400 + seed * 2,
+        trendPct: 8,
+      },
+    },
+    categoryData: [
+      { name: "Education", value: 350, color: "bg-red-500" },
+      { name: "Healthcare", value: 280, color: "bg-red-400" },
+      { name: "Community", value: 180, color: "bg-red-300" },
+      { name: "Environment", value: 120, color: "bg-red-200" },
+    ],
+    donationChart: [
+      { month: "Jan", amount: 45000, efficiency: 75 },
+      { month: "Feb", amount: 52000, efficiency: 82 },
+      { month: "Mar", amount: 48000, efficiency: 78 },
+      { month: "Apr", amount: 61000, efficiency: 85 },
+      { month: "May", amount: 58000, efficiency: 88 },
+      { month: "Jun", amount: 64000, efficiency: 92 },
+    ],
+    todayStats: {
+      active: 750,
+      pending: 350,
+      completed: 150,
+    },
+  };
+};
 
 export function AdminDashboard() {
   const { user } = useAuth();
@@ -37,7 +72,7 @@ export function AdminDashboard() {
 
   const dashboard = useMemo(
     () =>
-      buildMockDashboard({
+      buildSWDWDashboard({
         range,
         ...(range === TIME_PERIODS.CUSTOM
           ? dateRange
@@ -46,376 +81,256 @@ export function AdminDashboard() {
     [range, dateRange],
   );
 
-  const canSeeUsers = hasPermission(user, PERMISSIONS.USERS_VIEW);
-  const canSeeAppointments = hasPermission(user, PERMISSIONS.APPOINTMENTS_VIEW);
-  const canSeeSessions = hasPermission(user, PERMISSIONS.SESSIONS_VIEW);
-  const canSeeContent = hasPermission(user, PERMISSIONS.CONTENT_VIEW);
-  const canSeeEnquiries = hasPermission(user, PERMISSIONS.ENQUIRIES_VIEW);
-  const canSeeAnalytics = hasPermission(user, PERMISSIONS.ANALYTICS_VIEW);
-  const role = getRole(user);
-  const canSeeOutlets = role === ROLES.ADMIN || role === ROLES.SUBADMIN;
-
-  const modules = useMemo(() => {
-    const all = dashboard.modules || [];
-    if (getRole(user) === "admin") return all;
-
-    return all.filter((m) => {
-      if (m.id === "users") return canSeeUsers;
-      if (m.id === "content") return canSeeContent;
-      if (m.id === "enquiries") return canSeeEnquiries;
-      return true;
-    });
-  }, [dashboard.modules, user, canSeeUsers, canSeeContent, canSeeEnquiries]);
-
   return (
-    <div className="min-h-screen">
-      <div className="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-white via-indigo-50/40 to-white p-4 sm:p-6">
-        <SectionHeader
-          title={DASHBOARD_LABELS.TITLE}
-          subtitle={DASHBOARD_LABELS.SUBTITLE}
-          right={
-            <RangeFilter
-              value={range}
-              onChange={setRange}
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-              onDateChange={setDateRange}
-            />
-          }
-        />
-
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-9">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <KpiCard
-                title={DASHBOARD_LABELS.KPI_CUSTOMERS}
-                value={dashboard.metrics.users.current}
-                subLabel={DASHBOARD_LABELS.LABEL_NEW}
-                subValue={dashboard.metrics.registrations.current}
-                trendPct={dashboard.metrics.users.trendPct}
-                icon={<Users className="h-5 w-5" />}
-                tone="indigo"
-              />
-              <KpiCard
-                title={DASHBOARD_LABELS.KPI_APPOINTMENTS}
-                value={dashboard.metrics.appointments.current}
-                subLabel={DASHBOARD_LABELS.LABEL_PREV}
-                subValue={dashboard.metrics.appointments.prev}
-                trendPct={dashboard.metrics.appointments.trendPct}
-                icon={<Calendar className="h-5 w-5" />}
-                tone="emerald"
-              />
-              <KpiCard
-                title={DASHBOARD_LABELS.KPI_SESSIONS}
-                value={dashboard.metrics.sessions.current}
-                subLabel={DASHBOARD_LABELS.LABEL_PREV}
-                subValue={dashboard.metrics.sessions.prev}
-                trendPct={dashboard.metrics.sessions.trendPct}
-                icon={<Activity className="h-5 w-5" />}
-                tone="violet"
-              />
-              <KpiCard
-                title={DASHBOARD_LABELS.KPI_CONTENT_PUBLISHED}
-                value={dashboard.metrics.contentPublished.current}
-                subLabel={DASHBOARD_LABELS.LABEL_PREV}
-                subValue={dashboard.metrics.contentPublished.prev}
-                trendPct={dashboard.metrics.contentPublished.trendPct}
-                icon={<Sparkles className="h-5 w-5" />}
-                tone="rose"
-              />
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-              <Panel
-                title={DASHBOARD_LABELS.PANEL_APPOINTMENTS_TREND}
-                subtitle={DASHBOARD_LABELS.PANEL_APPOINTMENTS_TREND_SUBTITLE}
-                right={
-                  <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                    {range.toUpperCase()}
-                  </span>
-                }
-              >
-                {canSeeAnalytics && canSeeAppointments ? (
-                  <AppointmentsTrendChart
-                    data={dashboard.charts.appointments}
-                  />
-                ) : (
-                  <LockedNotice />
-                )}
-              </Panel>
-
-              <Panel
-                title={DASHBOARD_LABELS.PANEL_SESSIONS_OVERVIEW}
-                subtitle={DASHBOARD_LABELS.PANEL_SESSIONS_OVERVIEW_SUBTITLE}
-                right={
-                  <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                    {range.toUpperCase()}
-                  </span>
-                }
-              >
-                {canSeeAnalytics && canSeeSessions ? (
-                  <SessionsStackChart data={dashboard.charts.sessions} />
-                ) : (
-                  <LockedNotice />
-                )}
-              </Panel>
-            </div>
-
-            <div className="mt-4">
-              <Panel
-                title={DASHBOARD_LABELS.MODULES_TITLE}
-                subtitle={DASHBOARD_LABELS.MODULES_SUBTITLE}
-                right={
-                  <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                    {DASHBOARD_LABELS.LABEL_ROLE}: {role || "user"}
-                  </span>
-                }
-              >
-                <ModuleGrid modules={modules} />
-              </Panel>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="rounded-3xl border border-red-200/70 bg-gradient-to-br from-white via-red-50/40 to-white p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              SWDW Foundation Dashboard
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Overview of volunteers, users, donations and gallery
+            </p>
           </div>
-
-          <div className="lg:col-span-3 space-y-4">
-            <Panel
-              title={DASHBOARD_LABELS.RECENT_ACTIVITY_TITLE}
-              subtitle={DASHBOARD_LABELS.RECENT_ACTIVITY_SUBTITLE}
-              right={
-                <span className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100">
-                  {DASHBOARD_LABELS.BADGE_LIVE}
-                </span>
-              }
-            >
-              <ActivityFeed items={dashboard.activity} />
-            </Panel>
-
-            <Panel
-              title={DASHBOARD_LABELS.ENQUIRIES_QUEUE_TITLE}
-              subtitle={DASHBOARD_LABELS.ENQUIRIES_QUEUE_SUBTITLE}
-              right={
-                <span className="inline-flex items-center gap-2 rounded-xl bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-700 ring-1 ring-cyan-100">
-                  {DASHBOARD_LABELS.BADGE_CRM}
-                </span>
-              }
-            >
-              {canSeeEnquiries ? (
-                <QueueTable
-                  columns={[
-                    { key: "name", label: "Name" },
-                    { key: "subject", label: "Subject" },
-                    { key: "status", label: "Status", type: "status" },
-                  ]}
-                  rows={dashboard.queues.enquiries}
-                />
-              ) : (
-                <LockedNotice />
-              )}
-            </Panel>
-
-            <Panel
-              title={DASHBOARD_LABELS.APPOINTMENTS_QUEUE_TITLE}
-              subtitle={DASHBOARD_LABELS.APPOINTMENTS_QUEUE_SUBTITLE}
-              right={
-                <span className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                  {DASHBOARD_LABELS.BADGE_OPS}
-                </span>
-              }
-            >
-              {canSeeAppointments ? (
-                <QueueTable
-                  columns={[
-                    { key: "customer", label: "Customer" },
-                    { key: "service", label: "Service" },
-                    { key: "when", label: "When", mono: true },
-                    { key: "status", label: "Status", type: "status" },
-                  ]}
-                  rows={dashboard.queues.appointments}
-                />
-              ) : (
-                <LockedNotice />
-              )}
-            </Panel>
-          </div>
+          <RangeFilter
+            value={range}
+            onChange={setRange}
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onDateChange={setDateRange}
+          />
         </div>
 
-        {canSeeOutlets ? (
-          <div className="mt-4">
-            <Panel
-              title={DASHBOARD_LABELS.OUTLET_REPORTS_TITLE}
-              subtitle={DASHBOARD_LABELS.OUTLET_REPORTS_SUBTITLE}
-              right={
-                <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                  {role === ROLES.SUBADMIN
-                    ? DASHBOARD_LABELS.LABEL_MY_OUTLET
-                    : DASHBOARD_LABELS.LABEL_ALL_OUTLETS}
-                </span>
-              }
-            >
-              <QueueTable
-                columns={[
-                  { key: "name", label: "Outlet" },
-                  { key: "city", label: "City" },
-                  { key: "customers", label: "Customers" },
-                  { key: "appointments", label: "Appointments" },
-                  { key: "sessions", label: "Sessions" },
-                  { key: "enquiries", label: "Enquiries" },
-                  { key: "trendPct", label: "Trend" },
-                ]}
-                rows={dashboard.outlets || []}
-              />
-            </Panel>
-          </div>
-        ) : null}
-
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Panel
-            title={DASHBOARD_LABELS.PANEL_GROWTH}
-            subtitle={DASHBOARD_LABELS.PANEL_GROWTH_SUBTITLE}
-          >
-            <div className="grid grid-cols-2 gap-3">
-              <StatRow
-                label={DASHBOARD_LABELS.STAT_CUSTOMERS}
-                value={dashboard.metrics.users.current}
-                icon={<Users className="h-4 w-4" />}
-              />
-              <StatRow
-                label={DASHBOARD_LABELS.STAT_APPOINTMENTS}
-                value={dashboard.metrics.appointments.current}
-                icon={<Calendar className="h-4 w-4" />}
-              />
-              <StatRow
-                label={DASHBOARD_LABELS.STAT_SESSIONS}
-                value={dashboard.metrics.sessions.current}
-                icon={<Activity className="h-4 w-4" />}
-              />
-              <StatRow
-                label={DASHBOARD_LABELS.STAT_ENQUIRIES}
-                value={dashboard.metrics.enquiries.current}
-                icon={<MessageSquareText className="h-4 w-4" />}
-              />
-            </div>
-          </Panel>
-
-          <Panel
-            title={DASHBOARD_LABELS.PANEL_PUBLISHING}
-            subtitle={DASHBOARD_LABELS.PANEL_PUBLISHING_SUBTITLE}
-          >
-            {canSeeContent ? (
-              <div className="space-y-3">
-                <PublishLine label={DASHBOARD_LABELS.PUBLISH_TIPS} value={8} />
-                <PublishLine
-                  label={DASHBOARD_LABELS.PUBLISH_TRIMESTER_PLANS}
-                  value={4}
-                />
-                <PublishLine
-                  label={DASHBOARD_LABELS.PUBLISH_NUTRITION_PLANS}
-                  value={5}
-                />
-                <PublishLine
-                  label={DASHBOARD_LABELS.PUBLISH_MEAL_PLANS}
-                  value={4}
-                />
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Volunteers
+                </p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {dashboard.metrics.volunteers.current}
+                </p>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm font-medium text-green-500">
+                    {dashboard.metrics.volunteers.trendPct}%
+                  </span>
+                </div>
               </div>
-            ) : (
-              <LockedNotice />
-            )}
-          </Panel>
-
-          <Panel
-            title={DASHBOARD_LABELS.PANEL_ACTIONS}
-            subtitle={DASHBOARD_LABELS.PANEL_ACTIONS_SUBTITLE}
-          >
-            <div className="grid grid-cols-1 gap-2">
-              <QuickAction
-                title={DASHBOARD_LABELS.ACTION_CREATE_CUSTOMER}
-                hint={DASHBOARD_LABELS.ACTION_CREATE_CUSTOMER_HINT}
-                enabled={canSeeUsers}
-              />
-              <QuickAction
-                title={DASHBOARD_LABELS.ACTION_ASSIGN_ENQUIRY}
-                hint={DASHBOARD_LABELS.ACTION_ASSIGN_ENQUIRY_HINT}
-                enabled={canSeeEnquiries}
-              />
-              <QuickAction
-                title={DASHBOARD_LABELS.ACTION_PUBLISH_TIP}
-                hint={DASHBOARD_LABELS.ACTION_PUBLISH_TIP_HINT}
-                enabled={canSeeContent}
-              />
-              <QuickAction
-                title={DASHBOARD_LABELS.ACTION_REVIEW_APPOINTMENTS}
-                hint={DASHBOARD_LABELS.ACTION_REVIEW_APPOINTMENTS_HINT}
-                enabled={canSeeAppointments}
-              />
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
             </div>
-          </Panel>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {dashboard.metrics.users.current}
+                </p>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm font-medium text-green-500">
+                    {dashboard.metrics.users.trendPct}%
+                  </span>
+                </div>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <UserCheck className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Donations
+                </p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  ₹{dashboard.metrics.donations.current.toLocaleString()}
+                </p>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm font-medium text-green-500">
+                    {dashboard.metrics.donations.trendPct}%
+                  </span>
+                </div>
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <DollarSign className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Gallery Items
+                </p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {dashboard.metrics.gallery.current}
+                </p>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm font-medium text-green-500">
+                    {dashboard.metrics.gallery.trendPct}%
+                  </span>
+                </div>
+              </div>
+              <div className="bg-teal-100 p-3 rounded-lg">
+                <Image className="w-6 h-6 text-teal-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 mb-6">
+          {/* Category/Service Distribution */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Category Distribution
+              </h3>
+              <Activity className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-3">
+              {dashboard.categoryData.map((category, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full ${category.color} mr-3`}
+                    ></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {category.name}
+                    </span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900">
+                    {category.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {/* Simple donut chart visualization */}
+            <div className="mt-4 flex justify-center">
+              <div className="relative w-32 h-32">
+                <div className="absolute inset-0 rounded-full border-8 border-red-500"></div>
+                <div className="absolute inset-2 rounded-full border-8 border-red-400 border-t-transparent border-r-transparent transform rotate-45"></div>
+                <div className="absolute inset-4 rounded-full border-8 border-red-300 border-b-transparent border-l-transparent transform -rotate-45"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold text-gray-900">930</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Donation Chart */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 xl:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Monthly Donation Report
+              </h3>
+              <Activity className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-3">
+              {dashboard.donationChart.map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 w-12">
+                    {item.month}
+                  </span>
+                  <div className="flex-1 mx-4">
+                    <div className="bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                      <div
+                        className="bg-red-500 h-full rounded-full flex items-center justify-end pr-2"
+                        style={{ width: `${(item.amount / 65000) * 100}%` }}
+                      >
+                        <span className="text-xs text-white font-medium">
+                          ₹{(item.amount / 1000).toFixed(0)}k
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-pink-500 rounded-full mr-2"></div>
+                    <span className="text-sm font-medium text-gray-900">
+                      {item.efficiency}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center mt-4 space-x-6">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span className="text-xs text-gray-600">Revenue (₹)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-pink-500 rounded-full mr-2"></div>
+                <span className="text-xs text-gray-600">Efficiency %</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Today's Stats */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Today's Overview
+            </h3>
+            <Calendar className="w-5 h-5 text-gray-400" />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-800">Active</p>
+                  <p className="text-xl font-bold text-green-900">
+                    {dashboard.todayStats.active}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-3">
+                  <Calendar className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-orange-800">Pending</p>
+                  <p className="text-xl font-bold text-orange-900">
+                    {dashboard.todayStats.pending}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mr-3">
+                  <div className="w-4 h-1 bg-white rounded-full"></div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-800">Completed</p>
+                  <p className="text-xl font-bold text-red-900">
+                    {dashboard.todayStats.completed}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function getRole(user) {
-  if (!user?.role || typeof user.role !== "string") return "";
-  return user.role.toLowerCase();
-}
-
-function LockedNotice() {
-  return (
-    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center">
-      <p className="text-sm font-semibold text-slate-800">Access restricted</p>
-      <p className="mt-1 text-xs text-slate-600">
-        Admin can define permissions for this role.
-      </p>
-    </div>
-  );
-}
-
-function StatRow({ label, value, icon }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/5">
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-slate-600 truncate">{label}</p>
-        <p className="text-sm font-semibold text-slate-900 truncate">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function PublishLine({ label, value }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-      <div className="flex items-center gap-2">
-        <div className="h-9 w-9 rounded-xl bg-rose-50 text-rose-700 ring-1 ring-rose-100 flex items-center justify-center">
-          <ClipboardList className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">
-            {label}
-          </p>
-          <p className="text-xs text-slate-600">Published this {""}period</p>
-        </div>
-      </div>
-      <span className="text-sm font-semibold text-slate-900">{value}</span>
-    </div>
-  );
-}
-
-function QuickAction({ title, hint, enabled }) {
-  return (
-    <button
-      type="button"
-      disabled={!enabled}
-      className={`w-full rounded-xl border px-4 py-3 text-left transition ${
-        enabled
-          ? "border-slate-200 bg-white hover:bg-slate-50"
-          : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
-      }`}
-    >
-      <p className="text-sm font-semibold">{title}</p>
-      <p className="mt-0.5 text-xs">{hint}</p>
-    </button>
   );
 }

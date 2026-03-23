@@ -64,14 +64,20 @@ const Sidebar = () => {
             color: "text-purple-500",
           },
           {
-            name: "Experts",
+            name: "Team",
             path: "/experts",
             icon: icons.experts,
             color: "text-yellow-500",
           },
           {
-            name: "Tips",
-            path: "/tips",
+            name: "Volunteers",
+            path: "/volunteers",
+            icon: icons.experts,
+            color: "text-sky-500",
+          },
+          {
+            name: "Donations",
+            path: "/donations",
             icon: icons.tips,
             color: "text-blue-600",
           },
@@ -88,41 +94,10 @@ const Sidebar = () => {
             color: "text-red-500",
           },
           {
-            name: "Prenatal Care Services",
+            name: "Services",
             path: "/prenatal-cares",
             icon: icons.prenatal_services,
             color: "text-pink-500",
-          },
-          {
-            name: "Pregnancy Trimester Plans",
-            path: "/trimester",
-            icon: icons.trimester_plans,
-            color: "text-green-500",
-          },
-          {
-            name: "Nutrition Plans",
-            path: "/nutritions",
-            icon: icons.nutrition,
-            color: "text-purple-500",
-          },
-          {
-            name: "Meal Plans",
-            path: "/meal-plans",
-            icon: icons.meal_plans,
-            color: "text-violet-500",
-          },
-          {
-            name: "Wellness & Mindfulness",
-            path: "/wellness-mindfulness",
-            icon: icons.wellness,
-            color: "text-indigo-500",
-          },
-
-          {
-            name: "Products",
-            path: "/products",
-            icon: icons.products,
-            color: "text-sky-500",
           },
           {
             name: "Contact Inquiries",
@@ -189,7 +164,7 @@ const Sidebar = () => {
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 bg-white border-r border-gray-200 shadow-lg lg:block">
       <div className="flex flex-col h-full">
         {/* Sidebar header - Logo area with enhanced design - FIXED */}
-        <div className="flex-shrink-0 flex items-center justify-center h-20 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div className="flex-shrink-0 flex items-center justify-center h-20 px-6 bg-gradient-to-r from-red-600 to-red-500">
           <div className="flex items-center space-x-3">
             <div>
               <h1 className="text-xl font-bold text-white">SWDW Foundation</h1>
@@ -198,7 +173,7 @@ const Sidebar = () => {
         </div>
         {/* Role badge - FIXED */}
         <div className="flex-shrink-0 px-6 py-4 bg-gray-50">
-          <div className="inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
+          <div className="inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-full">
             <div className="w-2 h-2 mr-2 bg-white rounded-full animate-pulse"></div>
             {userData?.role?.charAt(0).toUpperCase() +
               userData?.role?.slice(1) || "User"}{" "}
@@ -215,9 +190,9 @@ const Sidebar = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 relative ${
                   isActive
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transform scale-[1.02]"
+                    ? "bg-red-500 text-white shadow-lg transform scale-[1.02]"
                     : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:scale-[1.01]"
                 }`}
               >
@@ -247,7 +222,7 @@ const Sidebar = () => {
                 </div>
                 <span className="flex-1">{item.name}</span>
                 {isActive && (
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
                 )}
               </Link>
             );
@@ -262,10 +237,10 @@ const Sidebar = () => {
                 <img
                   src={userData.image}
                   alt={userData.name}
-                  className="w-12 h-12 rounded-full ring-2 ring-blue-500"
+                  className="w-12 h-12 rounded-full ring-2 ring-red-500"
                 />
               ) : (
-                <div className="flex items-center justify-center w-12 h-12 text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
+                <div className="flex items-center justify-center w-12 h-12 text-white bg-gradient-to-r from-red-500 to-red-600 rounded-full">
                   <span className="text-lg font-bold">
                     {userData?.name?.charAt(0).toUpperCase() || "U"}
                   </span>
